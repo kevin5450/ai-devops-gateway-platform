@@ -78,4 +78,38 @@ ai-devops-gateway-platform/
 
 - Monorepo 기본 폴더 구조 정의
 - Git 추적을 위한 `.gitkeep` 파일 배치
-- 실제 Spring Boot, React, Kafka, Redis, MongoDB 코드는 아직 없음
+- Gateway Service 기본 Spring Boot 프로젝트 생성
+- React, AI Service, Kafka, Redis, MongoDB 코드는 아직 없음
+
+## Gateway Service
+
+`apps/gateway-service`는 Java 21, Spring Boot, Gradle 기반의 API Gateway 서비스입니다.
+
+현재 제공하는 엔드포인트:
+
+- `GET /health`: Gateway Service 상태 확인
+- `POST /api/chat`: AI Service 연동 전 placeholder 응답 반환
+
+예시 요청:
+
+```bash
+curl -X POST http://localhost:8080/api/chat \
+  -H "Content-Type: application/json" \
+  -d "{\"prompt\":\"hello\",\"userId\":\"demo-user\"}"
+```
+
+로컬 실행:
+
+```powershell
+cd apps/gateway-service
+.\gradlew.bat bootRun
+```
+
+빌드:
+
+```powershell
+cd apps/gateway-service
+.\gradlew.bat build
+```
+
+Gateway Service는 Gradle wrapper를 포함하므로 별도 Gradle 설치 없이 Windows에서 `.\gradlew.bat` 명령으로 실행할 수 있습니다.

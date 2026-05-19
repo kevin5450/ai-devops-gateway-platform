@@ -98,14 +98,16 @@ Goal:
 
 Tasks:
 
-- [ ] Create Gradle Spring Boot project under `apps/gateway-service`
-- [ ] Use Java 21
-- [ ] Add `/health`
-- [ ] Add `/api/chat` placeholder endpoint
-- [ ] Add request DTO
-- [ ] Add response DTO
-- [ ] Add basic error response
-- [ ] Add local run guide to README
+- [x] Create Gradle Spring Boot project under `apps/gateway-service`
+- [x] Use Java 21
+- [x] Add `/health`
+- [x] Add `/api/chat` placeholder endpoint
+- [x] Add request DTO
+- [x] Add response DTO
+- [x] Add basic error response
+- [x] Add local run guide to README
+- [x] Add Gradle wrapper
+- [x] Verify build with `.\gradlew.bat build`
 
 Expected commit:
 

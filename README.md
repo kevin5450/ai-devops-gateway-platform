@@ -90,6 +90,8 @@ ai-devops-gateway-platform/
 - `GET /health`: Gateway Service 상태 확인
 - `POST /api/chat`: AI Service 연동 전 placeholder 응답 반환
 
+현재 Gateway Service는 Controller, Service, DTO, Exception Handler 패키지로 기본 API 구조를 분리합니다.
+
 예시 요청:
 
 ```bash

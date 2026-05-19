@@ -108,6 +108,7 @@ Tasks:
 - [x] Add local run guide to README
 - [x] Add Gradle wrapper
 - [x] Verify build with `.\gradlew.bat build`
+- [x] Add Gateway API structure tests
 
 Expected commit:
 

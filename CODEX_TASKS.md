@@ -72,13 +72,13 @@ docs/
 
 Tasks:
 
-- [ ] Create folders
-- [ ] Add `.gitkeep` files
-- [ ] Add `.gitignore`
-- [ ] Create `docs/architecture.md`
-- [ ] Create `docs/performance-report.md`
-- [ ] Create `docs/trouble-shooting.md`
-- [ ] Update README project structure
+- [x] Create folders
+- [x] Add `.gitkeep` files
+- [x] Add `.gitignore`
+- [x] Create `docs/architecture.md`
+- [x] Create `docs/performance-report.md`
+- [x] Create `docs/trouble-shooting.md`
+- [x] Update README project structure
 
 Expected commit:
 

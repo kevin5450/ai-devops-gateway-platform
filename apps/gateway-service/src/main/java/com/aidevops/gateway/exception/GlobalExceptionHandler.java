@@ -30,6 +30,32 @@ public class GlobalExceptionHandler {
         ));
     }
 
+    @ExceptionHandler({IllegalArgumentException.class})
+    public ResponseEntity<ErrorResponse> handleBadRequest(
+            RuntimeException exception,
+            HttpServletRequest request
+    ) {
+        return ResponseEntity.badRequest().body(new ErrorResponse(
+                "INVALID_REQUEST",
+                exception.getMessage(),
+                request.getRequestURI(),
+                Instant.now()
+        ));
+    }
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleNotFound(
+            ResourceNotFoundException exception,
+            HttpServletRequest request
+    ) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(
+                "NOT_FOUND",
+                exception.getMessage(),
+                request.getRequestURI(),
+                Instant.now()
+        ));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleUnexpected(
             Exception exception,

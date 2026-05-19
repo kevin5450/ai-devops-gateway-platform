@@ -1,8 +1,8 @@
 # ai-devops-gateway-platform
 
-React, Spring Boot, AI Service, Redis, Kafka, MongoDB를 조합해 DevOps 관점의 AI Gateway 플랫폼을 구성하는 monorepo 프로젝트입니다.
+React, Spring Boot, AI Service, Redis, Kafka, MongoDB를 조합해 DevOps 관점의 Gateway 플랫폼을 구성하는 monorepo 프로젝트입니다.
 
-현재 단계에서는 실제 애플리케이션 코드를 만들지 않고, 프로젝트 목표와 예정 아키텍처, 디렉터리 구조만 정의합니다.
+현재 도메인은 Forest IoT Monitoring입니다. Gateway Service가 현장 장비의 센서 데이터를 수집하고, 장비별 최신값과 온도/습도 이상 상태를 조회하는 API를 제공합니다.
 
 ## 최종 목표
 
@@ -79,6 +79,7 @@ ai-devops-gateway-platform/
 - Monorepo 기본 폴더 구조 정의
 - Git 추적을 위한 `.gitkeep` 파일 배치
 - Gateway Service 기본 Spring Boot 프로젝트 생성
+- Gateway Service에 Forest IoT 센서 기본 API 추가
 - React, AI Service, Kafka, Redis, MongoDB 코드는 아직 없음
 
 ## Gateway Service
@@ -88,17 +89,60 @@ ai-devops-gateway-platform/
 현재 제공하는 엔드포인트:
 
 - `GET /health`: Gateway Service 상태 확인
+- `GET /api/health`: Gateway Service 상태 확인
 - `POST /api/chat`: AI Service 연동 전 placeholder 응답 반환
+- `POST /api/readings`: 센서 측정값 수집
+- `GET /api/devices/{deviceId}/latest`: 장비별 최신 센서 측정값 조회
+- `GET /api/devices/{deviceId}/issues/latest`: 장비별 최신 온도/습도 이상 상태 조회
 
-현재 Gateway Service는 Controller, Service, DTO, Exception Handler 패키지로 기본 API 구조를 분리합니다.
+현재 Gateway Service는 Controller, Service, DTO, Domain, Repository, Exception Handler 패키지로 기본 API 구조를 분리합니다.
 
-예시 요청:
+센서 데이터는 아직 MongoDB에 저장하지 않고 in-memory 저장소에 장비별 최신값만 보관합니다.
+
+AI placeholder 예시 요청:
 
 ```bash
 curl -X POST http://localhost:8080/api/chat \
   -H "Content-Type: application/json" \
   -d "{\"prompt\":\"hello\",\"userId\":\"demo-user\"}"
 ```
+
+센서 측정값 생성 예시:
+
+```bash
+curl -X POST http://localhost:8080/api/readings \
+  -H "Content-Type: application/json" \
+  -d "{\"deviceId\":\"Cube1\",\"measuredAt\":\"2026-05-19T15:30:00\",\"temperature\":24.5,\"humidity\":61.2,\"light\":832.5}"
+```
+
+최신 측정값 조회:
+
+```bash
+curl http://localhost:8080/api/devices/Cube1/latest
+```
+
+최신 이상 상태 조회:
+
+```bash
+curl http://localhost:8080/api/devices/Cube1/issues/latest
+```
+
+센서 검증 규칙:
+
+| Field | Rule |
+|---|---|
+| `deviceId` | required |
+| `measuredAt` | required, ISO-8601 local date-time |
+| `temperature` | required |
+| `humidity` | required, 0~100 |
+| `light` | required, 0 이상 |
+
+이상 상태 기준:
+
+| Metric | Normal Range |
+|---|---|
+| temperature | 18~27 |
+| humidity | 40~75 |
 
 로컬 실행:
 

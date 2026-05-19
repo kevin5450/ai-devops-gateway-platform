@@ -31,6 +31,15 @@ class GatewayApiTests {
     }
 
     @Test
+    void apiHealthReturnsGatewayStatus() throws Exception {
+        mockMvc.perform(get("/api/health"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("UP"))
+                .andExpect(jsonPath("$.service").value("gateway-service"))
+                .andExpect(jsonPath("$.timestamp", not(blankOrNullString())));
+    }
+
+    @Test
     void chatReturnsPlaceholderResponse() throws Exception {
         mockMvc.perform(post("/api/chat")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -61,6 +70,81 @@ class GatewayApiTests {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"))
                 .andExpect(jsonPath("$.path").value("/api/chat"))
+                .andExpect(jsonPath("$.message", not(blankOrNullString())));
+    }
+
+    @Test
+    void createReadingStoresLatestReading() throws Exception {
+        mockMvc.perform(post("/api/readings")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "deviceId": "Cube1",
+                                  "measuredAt": "2026-05-19T15:30:00",
+                                  "temperature": 24.5,
+                                  "humidity": 61.2,
+                                  "light": 832.5
+                                }
+                                """))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.deviceId").value("Cube1"))
+                .andExpect(jsonPath("$.message").value("Sensor reading accepted"));
+
+        mockMvc.perform(get("/api/devices/Cube1/latest"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.deviceId").value("Cube1"))
+                .andExpect(jsonPath("$.measuredAt").value("2026-05-19T15:30:00"))
+                .andExpect(jsonPath("$.temperature").value(24.5))
+                .andExpect(jsonPath("$.humidity").value(61.2))
+                .andExpect(jsonPath("$.light").value(832.5));
+    }
+
+    @Test
+    void latestReadingReturnsNotFoundWhenDeviceHasNoData() throws Exception {
+        mockMvc.perform(get("/api/devices/UnknownCube/latest"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("NOT_FOUND"))
+                .andExpect(jsonPath("$.message").value("No sensor reading found for deviceId: UnknownCube"));
+    }
+
+    @Test
+    void latestIssueReportsHighTemperature() throws Exception {
+        mockMvc.perform(post("/api/readings")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "deviceId": "Cube2",
+                                  "measuredAt": "2026-05-19T15:35:00",
+                                  "temperature": 30.2,
+                                  "humidity": 55.0,
+                                  "light": 700.0
+                                }
+                                """))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(get("/api/devices/Cube2/issues/latest"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.deviceId").value("Cube2"))
+                .andExpect(jsonPath("$.temperature.status").value("HIGH"))
+                .andExpect(jsonPath("$.humidity.status").value("OK"));
+    }
+
+    @Test
+    void createReadingRejectsInvalidHumidity() throws Exception {
+        mockMvc.perform(post("/api/readings")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "deviceId": "Cube3",
+                                  "measuredAt": "2026-05-19T15:40:00",
+                                  "temperature": 24.5,
+                                  "humidity": 120,
+                                  "light": 832.5
+                                }
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"))
+                .andExpect(jsonPath("$.path").value("/api/readings"))
                 .andExpect(jsonPath("$.message", not(blankOrNullString())));
     }
 }

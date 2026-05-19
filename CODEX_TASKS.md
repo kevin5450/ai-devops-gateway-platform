@@ -118,29 +118,32 @@ add spring boot gateway service
 
 ---
 
-# Phase 3. React Web Client
+# Phase 3. Forest IoT Sensor Base API
 
 Goal:
 
 ```text
-Gateway API를 호출하는 간단한 React 화면을 만든다.
+Forest IoT Monitoring 도메인의 센서 데이터 수집/조회 API를 Gateway Service에 추가한다.
 ```
 
 Tasks:
 
-- [ ] Create Vite React app under `apps/web-client`
-- [ ] Add prompt input
-- [ ] Add submit button
-- [ ] Call Gateway `/api/chat`
-- [ ] Display response
-- [ ] Display loading state
-- [ ] Display error state
-- [ ] Display latency or request status
+- [x] Add `GET /api/health`
+- [x] Add `POST /api/readings`
+- [x] Add `GET /api/devices/{deviceId}/latest`
+- [x] Add `GET /api/devices/{deviceId}/issues/latest`
+- [x] Add sensor reading request/response DTOs
+- [x] Add sensor reading domain objects
+- [x] Add in-memory latest reading store
+- [x] Add temperature/humidity threshold policy
+- [x] Add validation and not-found error responses
+- [x] Add Gateway API tests
+- [x] Update README with current sensor API
 
 Expected commit:
 
 ```text
-add react web client
+add sensor reading base api
 ```
 
 ---

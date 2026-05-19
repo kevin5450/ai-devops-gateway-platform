@@ -148,52 +148,61 @@ add sensor reading base api
 
 ---
 
-# Phase 4. AI Service
+# Phase 4. Domain Separation and Tests
 
 Goal:
 
 ```text
-Gateway와 분리된 AI Service를 만든다.
+Forest IoT Monitoring 도메인 구조를 정리하고 검증/정책 테스트를 보강한다.
 ```
 
 Tasks:
 
-- [ ] Choose Node.js Express or Python FastAPI
-- [ ] Add `/health`
-- [ ] Add `/ai/chat`
-- [ ] Return mock AI response first
-- [ ] Add environment variable structure for future LLM provider
-- [ ] Do not hardcode secrets
+- [x] Add domain records for `DeviceId`, `SensorReading`, and `SensorIssue`
+- [x] Add `IssueStatus` enum
+- [x] Add `SensorThresholdPolicy`
+- [x] Keep storage in-memory
+- [x] Add normal reading ingestion test
+- [x] Add invalid humidity test
+- [x] Add missing deviceId test
+- [x] Add negative light test
+- [x] Add abnormal temperature issue test
+- [x] Add abnormal humidity issue test
+- [x] Add threshold policy unit tests
+- [x] Verify build with `.\gradlew.bat build`
 
 Expected commit:
 
 ```text
-add ai service mock endpoint
+add sensor domain tests
 ```
 
 ---
 
-# Phase 5. Gateway to AI Service Integration
+# Phase 5. Persistence Preparation and Documentation
 
 Goal:
 
 ```text
-Gateway의 /api/chat 요청을 AI Service로 전달한다.
+향후 MongoDB 연동과 운영 확장을 위한 구조와 문서를 준비한다.
 ```
 
 Tasks:
 
-- [ ] Add HTTP client in Gateway Service
-- [ ] Add configurable `AI_SERVICE_BASE_URL`
-- [ ] Add timeout handling
-- [ ] Add fallback error response
-- [ ] Measure `latencyMs`
-- [ ] Return AI response to frontend
+- [x] Add `SensorReadingRepository` abstraction
+- [x] Keep `InMemorySensorReadingStore` as the current implementation
+- [x] Do not add MongoDB dependency yet
+- [x] Document why DB integration is postponed
+- [x] Add API examples to `docs/api-design.md`
+- [x] Update architecture notes for the current in-memory boundary
+- [x] Add troubleshooting notes for build, test, run, validation, and in-memory storage
+- [x] Update README with package structure and persistence plan
+- [x] Verify build with `.\gradlew.bat build`
 
 Expected commit:
 
 ```text
-connect gateway to ai service
+prepare sensor persistence structure
 ```
 
 ---

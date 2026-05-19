@@ -5,17 +5,17 @@ import com.aidevops.gateway.domain.SensorReading;
 import com.aidevops.gateway.dto.SensorIssueResponse;
 import com.aidevops.gateway.dto.SensorReadingRequest;
 import com.aidevops.gateway.exception.ResourceNotFoundException;
-import com.aidevops.gateway.repository.InMemorySensorReadingStore;
+import com.aidevops.gateway.repository.SensorReadingRepository;
 import org.springframework.stereotype.Service;
 
 @Service
 public class SensorReadingService {
 
-    private final InMemorySensorReadingStore store;
+    private final SensorReadingRepository repository;
     private final SensorThresholdPolicy thresholdPolicy;
 
-    public SensorReadingService(InMemorySensorReadingStore store, SensorThresholdPolicy thresholdPolicy) {
-        this.store = store;
+    public SensorReadingService(SensorReadingRepository repository, SensorThresholdPolicy thresholdPolicy) {
+        this.repository = repository;
         this.thresholdPolicy = thresholdPolicy;
     }
 
@@ -28,12 +28,12 @@ public class SensorReadingService {
                 request.light()
         );
 
-        return store.save(reading);
+        return repository.save(reading);
     }
 
     public SensorReading getLatest(String deviceId) {
         DeviceId id = new DeviceId(deviceId);
-        return store.findLatest(id)
+        return repository.findLatest(id)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "No sensor reading found for deviceId: " + id.value()
                 ));

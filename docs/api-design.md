@@ -1,21 +1,23 @@
 # API Design
 
-이 문서는 Forest IoT Monitoring Backend의 초기 API 설계를 정리합니다.
+This document describes the current Forest IoT Monitoring Backend API.
+
+The service is a Spring Boot reimplementation and extension of a previous Node.js Forest IoT monitoring project. Legacy code is not copied into this repository. The current implementation focuses on field IoT sensor data ingestion, validation, and monitoring.
 
 ---
 
 ## 1. API Design Goal
 
-초기 API의 목적은 다음과 같습니다.
+The current API answers four questions:
 
 ```text
-1. 서버가 정상 동작하는지 확인한다.
-2. 장비가 보낸 센서 데이터를 수집한다.
-3. 장비별 최신 센서 데이터를 조회한다.
-4. 장비별 최신 이상 상태를 조회한다.
+1. Is the gateway service running?
+2. Can a device submit sensor readings?
+3. What is the latest reading for a device?
+4. Does the latest reading indicate a temperature or humidity issue?
 ```
 
-Phase 3에서는 DB 연결 없이 in-memory 저장소를 사용합니다.
+Phases 3 through 5 intentionally use in-memory storage. MongoDB integration is postponed so that the API contract, validation behavior, domain model, and service boundaries can be stabilized first.
 
 ---
 
@@ -27,18 +29,23 @@ Phase 3에서는 DB 연결 없이 in-memory 저장소를 사용합니다.
 GET /api/health
 ```
 
+`GET /health` is also kept for the earlier gateway health check.
+
 ### Response
 
 ```json
 {
   "status": "UP",
-  "service": "gateway-service"
+  "service": "gateway-service",
+  "timestamp": "2026-05-19T07:00:00Z"
 }
 ```
 
-### Purpose
+### curl
 
-서버 실행 여부를 빠르게 확인하기 위한 API입니다.
+```bash
+curl http://localhost:8080/api/health
+```
 
 ---
 
@@ -75,22 +82,32 @@ POST /api/readings
 }
 ```
 
+### curl
+
+```bash
+curl -X POST http://localhost:8080/api/readings \
+  -H "Content-Type: application/json" \
+  -d "{\"deviceId\":\"Cube1\",\"measuredAt\":\"2026-05-19T15:30:00\",\"temperature\":24.5,\"humidity\":61.2,\"light\":832.5}"
+```
+
 ### Validation Rules
 
 | Field | Rule |
 |---|---|
-| deviceId | required |
-| measuredAt | required |
-| temperature | required |
-| humidity | required, 0~100 |
-| light | required, 0 이상 |
+| `deviceId` | Required, not blank |
+| `measuredAt` | Required, ISO-8601 local date-time |
+| `temperature` | Required |
+| `humidity` | Required, 0 to 100 |
+| `light` | Required, greater than or equal to 0 |
 
 ### Error Response Example
 
 ```json
 {
-  "code": "INVALID_REQUEST",
-  "message": "humidity must be between 0 and 100"
+  "code": "VALIDATION_ERROR",
+  "message": "humidity: humidity must be between 0 and 100",
+  "path": "/api/readings",
+  "timestamp": "2026-05-19T07:00:00Z"
 }
 ```
 
@@ -118,18 +135,19 @@ GET /api/devices/Cube1/latest
   "measuredAt": "2026-05-19T15:30:00",
   "temperature": 24.5,
   "humidity": 61.2,
-  "light": 832.5
+  "light": 832.5,
+  "message": null
 }
 ```
 
 ### No Data Response
 
-초기 구현에서는 404 응답을 권장합니다.
-
 ```json
 {
   "code": "NOT_FOUND",
-  "message": "No sensor reading found for deviceId: Cube1"
+  "message": "No sensor reading found for deviceId: Cube1",
+  "path": "/api/devices/Cube1/latest",
+  "timestamp": "2026-05-19T07:00:00Z"
 }
 ```
 
@@ -157,11 +175,11 @@ GET /api/devices/Cube1/issues/latest
   "measuredAt": "2026-05-19T15:30:00",
   "temperature": {
     "status": "OK",
-    "message": "현재 이슈 없음"
+    "message": "No current issue"
   },
   "humidity": {
     "status": "OK",
-    "message": "현재 이슈 없음"
+    "message": "No current issue"
   }
 }
 ```
@@ -174,11 +192,11 @@ GET /api/devices/Cube1/issues/latest
   "measuredAt": "2026-05-19T15:30:00",
   "temperature": {
     "status": "HIGH",
-    "message": "적정 온도 범위 초과: 27℃ 초과"
+    "message": "Temperature is above safe range: above 27"
   },
   "humidity": {
-    "status": "OK",
-    "message": "현재 이슈 없음"
+    "status": "LOW",
+    "message": "Humidity is below safe range: below 40"
   }
 }
 ```
@@ -187,28 +205,38 @@ GET /api/devices/Cube1/issues/latest
 
 ## 6. Threshold Policy
 
-초기 기준값은 기존 forest 프로젝트의 값을 참고합니다.
+Current issue detection uses these initial thresholds:
 
-```text
-TEMP_MIN = 18
-TEMP_MAX = 27
-HUM_MIN = 40
-HUM_MAX = 75
-```
+| Metric | LOW | OK | HIGH |
+|---|---|---|---|
+| temperature | `< 18` | `18~27` | `> 27` |
+| humidity | `< 40` | `40~75` | `> 75` |
 
-정책 로직은 Controller에 넣지 않고 `SensorThresholdPolicy` 같은 별도 클래스로 분리합니다.
+The policy lives in `SensorThresholdPolicy` instead of the controller so it can be tested and changed independently.
 
 ---
 
-## 7. API Evolution Plan
+## 7. Current Persistence Decision
 
-향후 API는 다음과 같이 확장합니다.
+The current implementation stores only the latest reading per device in memory.
 
-| Phase | API | Purpose |
-|---|---|---|
-| Phase 3 | `/api/readings` | in-memory 센서 데이터 수집 |
-| Phase 3 | `/api/devices/{deviceId}/latest` | 최신값 조회 |
-| Phase 3 | `/api/devices/{deviceId}/issues/latest` | 최신 이슈 조회 |
-| Phase 5 | same APIs | MongoDB 저장소로 변경 |
-| Phase 6 | `/api/devices/{deviceId}/daily-summary` | 일별 요약 조회 |
-| Phase 8 | `/api/metrics/latency` | 지연 시간 측정 결과 조회 |
+MongoDB is intentionally postponed because Phase 5 is about stabilizing:
+
+- API request and response shape
+- validation behavior
+- domain records
+- service and policy boundaries
+- repository abstraction for future persistence
+
+The code already has a `SensorReadingRepository` interface. The current implementation is `InMemorySensorReadingStore`; a later MongoDB implementation can replace it without changing the controller contract.
+
+---
+
+## 8. Next API Evolution
+
+| Future Area | Direction |
+|---|---|
+| MongoDB | Persist readings and issue history |
+| DailySummary | Add daily aggregation per device |
+| DeviceStatus | Add `NORMAL`, `WARNING`, `NO_DATA` summary status |
+| Operations | Add Redis, Kafka, Docker, Kubernetes, CI, and k6 in later phases |

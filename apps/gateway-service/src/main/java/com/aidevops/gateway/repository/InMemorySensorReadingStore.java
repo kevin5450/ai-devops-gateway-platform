@@ -8,10 +8,11 @@ import java.util.concurrent.ConcurrentMap;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public class InMemorySensorReadingStore {
+public class InMemorySensorReadingStore implements SensorReadingRepository {
 
     private final ConcurrentMap<String, SensorReading> latestReadings = new ConcurrentHashMap<>();
 
+    @Override
     public SensorReading save(SensorReading reading) {
         latestReadings.merge(
                 reading.deviceId().value(),
@@ -21,6 +22,7 @@ public class InMemorySensorReadingStore {
         return latestReadings.get(reading.deviceId().value());
     }
 
+    @Override
     public Optional<SensorReading> findLatest(DeviceId deviceId) {
         return Optional.ofNullable(latestReadings.get(deviceId.value()));
     }

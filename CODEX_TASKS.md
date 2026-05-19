@@ -1,0 +1,407 @@
+# CODEX_TASKS.md
+
+이 파일은 Codex가 따라갈 작업 목록입니다.
+
+Codex는 한 번에 하나의 Phase만 수행해야 합니다.
+
+---
+
+## Status Legend
+
+| Mark | Meaning |
+|---|---|
+| `[ ]` | Not started |
+| `[~]` | In progress |
+| `[x]` | Done |
+| `[!]` | Blocked or needs user confirmation |
+
+---
+
+# Phase 0. Repository Guidance
+
+Goal:
+
+```text
+Codex가 이 프로젝트의 목표와 작업 규칙을 이해할 수 있도록 안내 파일을 추가한다.
+```
+
+Tasks:
+
+- [ ] Add `AGENTS.md`
+- [ ] Add `CODEX_TASKS.md`
+- [ ] Add `CODE_REVIEW.md`
+- [ ] Add `CODEX_PROMPTS.md`
+- [ ] Add `CODEX_WORKFLOW.md`
+- [ ] Commit and push guidance files
+
+Expected commit:
+
+```text
+add codex project guidance
+```
+
+---
+
+# Phase 1. Monorepo Structure
+
+Goal:
+
+```text
+프로젝트 전체 폴더 구조를 만든다.
+```
+
+Create:
+
+```text
+apps/
+  web-client/
+  gateway-service/
+  ai-service/
+  log-service/
+
+infra/
+  docker/
+  k8s/
+  k6/
+
+docs/
+
+.github/
+  workflows/
+```
+
+Tasks:
+
+- [ ] Create folders
+- [ ] Add `.gitkeep` files
+- [ ] Add `.gitignore`
+- [ ] Create `docs/architecture.md`
+- [ ] Create `docs/performance-report.md`
+- [ ] Create `docs/trouble-shooting.md`
+- [ ] Update README project structure
+
+Expected commit:
+
+```text
+create monorepo project structure
+```
+
+---
+
+# Phase 2. Spring Boot Gateway Service
+
+Goal:
+
+```text
+메인 백엔드인 Spring Boot Gateway Service를 만든다.
+```
+
+Tasks:
+
+- [ ] Create Gradle Spring Boot project under `apps/gateway-service`
+- [ ] Use Java 21
+- [ ] Add `/health`
+- [ ] Add `/api/chat` placeholder endpoint
+- [ ] Add request DTO
+- [ ] Add response DTO
+- [ ] Add basic error response
+- [ ] Add local run guide to README
+
+Expected commit:
+
+```text
+add spring boot gateway service
+```
+
+---
+
+# Phase 3. React Web Client
+
+Goal:
+
+```text
+Gateway API를 호출하는 간단한 React 화면을 만든다.
+```
+
+Tasks:
+
+- [ ] Create Vite React app under `apps/web-client`
+- [ ] Add prompt input
+- [ ] Add submit button
+- [ ] Call Gateway `/api/chat`
+- [ ] Display response
+- [ ] Display loading state
+- [ ] Display error state
+- [ ] Display latency or request status
+
+Expected commit:
+
+```text
+add react web client
+```
+
+---
+
+# Phase 4. AI Service
+
+Goal:
+
+```text
+Gateway와 분리된 AI Service를 만든다.
+```
+
+Tasks:
+
+- [ ] Choose Node.js Express or Python FastAPI
+- [ ] Add `/health`
+- [ ] Add `/ai/chat`
+- [ ] Return mock AI response first
+- [ ] Add environment variable structure for future LLM provider
+- [ ] Do not hardcode secrets
+
+Expected commit:
+
+```text
+add ai service mock endpoint
+```
+
+---
+
+# Phase 5. Gateway to AI Service Integration
+
+Goal:
+
+```text
+Gateway의 /api/chat 요청을 AI Service로 전달한다.
+```
+
+Tasks:
+
+- [ ] Add HTTP client in Gateway Service
+- [ ] Add configurable `AI_SERVICE_BASE_URL`
+- [ ] Add timeout handling
+- [ ] Add fallback error response
+- [ ] Measure `latencyMs`
+- [ ] Return AI response to frontend
+
+Expected commit:
+
+```text
+connect gateway to ai service
+```
+
+---
+
+# Phase 6. Redis Rate Limit
+
+Goal:
+
+```text
+Redis 기반 간단한 요청 제한을 Gateway에 추가한다.
+```
+
+Tasks:
+
+- [ ] Add Redis dependency to Gateway Service
+- [ ] Add Redis config
+- [ ] Implement userId or IP based rate limit
+- [ ] Return clear error when limit exceeded
+- [ ] Document rate-limit rule in README
+
+Expected commit:
+
+```text
+add redis rate limiting
+```
+
+---
+
+# Phase 7. Kafka Event Flow
+
+Goal:
+
+```text
+Gateway에서 요청 처리 결과를 Kafka 이벤트로 발행한다.
+```
+
+Tasks:
+
+- [ ] Add Kafka producer to Gateway Service
+- [ ] Define event schema
+- [ ] Use topic `ai.request.events`
+- [ ] Create or prepare Log Service Kafka consumer
+- [ ] Log consumed events to console first
+- [ ] Document topic and event schema
+
+Expected commit:
+
+```text
+add kafka request event flow
+```
+
+---
+
+# Phase 8. Log Service + MongoDB
+
+Goal:
+
+```text
+Log Service가 Kafka 이벤트를 받아 MongoDB에 저장한다.
+```
+
+Tasks:
+
+- [ ] Create Spring Boot Log Service under `apps/log-service`
+- [ ] Add `/health`
+- [ ] Add Kafka consumer
+- [ ] Add MongoDB dependency
+- [ ] Store request events in MongoDB
+- [ ] Add `/logs/recent`
+- [ ] Document MongoDB log schema
+
+Expected commit:
+
+```text
+add log service mongodb storage
+```
+
+---
+
+# Phase 9. Docker Compose Full Stack
+
+Goal:
+
+```text
+로컬에서 전체 서비스를 Docker Compose로 실행한다.
+```
+
+Tasks:
+
+- [ ] Add Dockerfile for `web-client`
+- [ ] Add Dockerfile for `gateway-service`
+- [ ] Add Dockerfile for `ai-service`
+- [ ] Add Dockerfile for `log-service`
+- [ ] Add `infra/docker/docker-compose.yml`
+- [ ] Include Redis
+- [ ] Include Kafka
+- [ ] Include Zookeeper or Kafka Kraft mode
+- [ ] Include MongoDB
+- [ ] Add `.env.example`
+- [ ] Document ports and run command
+
+Expected commit:
+
+```text
+add docker compose full stack
+```
+
+---
+
+# Phase 10. Kubernetes Manifests
+
+Goal:
+
+```text
+Kubernetes 배포 구조를 manifest로 정리한다.
+```
+
+Tasks:
+
+- [ ] Add namespace manifest
+- [ ] Add Gateway deployment/service
+- [ ] Add AI Service deployment/service
+- [ ] Add Log Service deployment/service
+- [ ] Add Web Client deployment/service
+- [ ] Add Redis manifest
+- [ ] Add MongoDB manifest or document limitation
+- [ ] Add Kafka manifest or document limitation
+- [ ] Document apply order
+
+Expected commit:
+
+```text
+add kubernetes manifests
+```
+
+---
+
+# Phase 11. GitHub Actions CI
+
+Goal:
+
+```text
+GitHub Actions로 기본 빌드 검사를 자동화한다.
+```
+
+Tasks:
+
+- [ ] Add Gateway Service build workflow
+- [ ] Add Log Service build workflow
+- [ ] Add Web Client build workflow
+- [ ] Add AI Service check workflow
+- [ ] Do not deploy automatically yet
+
+Expected commit:
+
+```text
+add github actions ci
+```
+
+---
+
+# Phase 12. k6 Load Test and Performance Report
+
+Goal:
+
+```text
+/api/chat 응답 시간을 부하테스트하고 결과를 문서화한다.
+```
+
+Tasks:
+
+- [ ] Add k6 script under `infra/k6`
+- [ ] Test 10 virtual users
+- [ ] Test 50 virtual users
+- [ ] Test 100 virtual users
+- [ ] Record avg, p95, p99
+- [ ] Update `docs/performance-report.md`
+- [ ] Explain bottlenecks and next improvements
+
+Important:
+
+```text
+Do not invent measured results.
+Only write actual results after running the test.
+```
+
+Expected commit:
+
+```text
+add k6 load test and performance report
+```
+
+---
+
+# Phase 13. Final Documentation Polish
+
+Goal:
+
+```text
+포트폴리오로 보여줄 수 있도록 README와 문서를 정리한다.
+```
+
+Tasks:
+
+- [ ] Add architecture diagram
+- [ ] Add local run guide
+- [ ] Add API table
+- [ ] Add troubleshooting summary
+- [ ] Add performance summary
+- [ ] Add portfolio summary paragraph
+- [ ] Add limitations and future improvements
+
+Expected commit:
+
+```text
+polish portfolio documentation
+```

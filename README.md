@@ -97,7 +97,7 @@ ai-devops-gateway-platform/
 
 현재 Gateway Service는 Controller, Service, DTO, Domain, Repository, Exception Handler 패키지로 기본 API 구조를 분리합니다.
 
-센서 데이터는 아직 MongoDB에 저장하지 않고 in-memory 저장소에 장비별 최신값만 보관합니다. `SensorReadingRepository` 인터페이스를 두어 이후 MongoDB 저장소로 교체할 수 있게 준비했습니다.
+기본 실행에서는 센서 데이터를 in-memory 저장소에 장비별 최신값으로 보관합니다. `mongo` 프로필을 활성화하면 같은 `SensorReadingRepository` 인터페이스를 통해 MongoDB 저장소 구현체를 사용할 수 있습니다.
 
 AI placeholder 예시 요청:
 
@@ -156,11 +156,23 @@ com.aidevops.gateway
 └── service
 ```
 
-MongoDB 연동을 미룬 이유:
+MongoDB 저장소 구조:
 
-- 먼저 API 계약과 검증 규칙을 안정화하기 위해서입니다.
-- Controller와 Service, Repository 경계를 확인한 뒤 영속 저장소를 붙이는 편이 변경 범위가 작습니다.
-- 현재 단계에서는 서버 재시작 시 in-memory 데이터가 사라지는 것이 정상 동작입니다.
+- 기본 프로필: `InMemorySensorReadingStore`
+- `mongo` 프로필: `MongoSensorReadingRepository`
+- MongoDB collection: `sensor_readings`
+- 연결 정보: `MONGODB_URI` 환경변수로 주입
+
+MongoDB 실행 예시:
+
+```powershell
+cd apps/gateway-service
+$env:SPRING_PROFILES_ACTIVE="mongo"
+$env:MONGODB_URI="mongodb://localhost:27017/forest_iot_gateway"
+.\gradlew.bat bootRun
+```
+
+민감정보는 코드, 문서, `.env` 파일에 저장하지 않습니다.
 
 로컬 실행:
 

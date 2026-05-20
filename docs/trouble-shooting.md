@@ -61,4 +61,17 @@ curl http://localhost:8080/api/health
 
 ## In-Memory Storage Limitation
 
-Current readings are stored in memory only. Restarting the gateway clears submitted readings. This is intentional until MongoDB is added in a later phase.
+Default-profile readings are stored in memory only. Restarting the gateway clears submitted readings.
+
+## MongoDB Profile
+
+MongoDB persistence is selected with the `mongo` Spring profile:
+
+```powershell
+cd apps/gateway-service
+$env:SPRING_PROFILES_ACTIVE="mongo"
+$env:MONGODB_URI="mongodb://localhost:27017/forest_iot_gateway"
+.\gradlew.bat bootRun
+```
+
+If MongoDB is not running, API calls that need persistence can fail when the `mongo` profile is active. Use the default profile for build/test work that should not depend on a local database.

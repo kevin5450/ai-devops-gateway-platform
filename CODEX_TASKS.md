@@ -207,26 +207,32 @@ prepare sensor persistence structure
 
 ---
 
-# Phase 6. Redis Rate Limit
+# Phase 6. MongoDB Persistence Layer
 
 Goal:
 
 ```text
-Redis 기반 간단한 요청 제한을 Gateway에 추가한다.
+Gateway Service에 MongoDB 저장소 구현체를 추가하되, 기본 in-memory 구조도 유지한다.
 ```
 
 Tasks:
 
-- [ ] Add Redis dependency to Gateway Service
-- [ ] Add Redis config
-- [ ] Implement userId or IP based rate limit
-- [ ] Return clear error when limit exceeded
-- [ ] Document rate-limit rule in README
+- [x] Add Spring Data MongoDB dependency to Gateway Service
+- [x] Keep `SensorReadingRepository` as the service-facing boundary
+- [x] Keep `InMemorySensorReadingStore` for the default profile
+- [x] Add MongoDB document for sensor readings
+- [x] Add MongoDB repository adapter
+- [x] Use environment-backed MongoDB connection configuration
+- [x] Do not create or commit `.env`
+- [x] Add local configuration example without secrets
+- [x] Add mapper test for persistence conversion
+- [x] Update README and docs
+- [x] Verify build with `.\gradlew.bat build`
 
 Expected commit:
 
 ```text
-add redis rate limiting
+add mongodb sensor reading persistence
 ```
 
 ---

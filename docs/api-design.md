@@ -17,7 +17,7 @@ The current API answers four questions:
 4. Does the latest reading indicate a temperature or humidity issue?
 ```
 
-Phases 3 through 5 intentionally use in-memory storage. MongoDB integration is postponed so that the API contract, validation behavior, domain model, and service boundaries can be stabilized first.
+The default runtime uses in-memory storage. The `mongo` Spring profile enables MongoDB-backed persistence through the same repository interface.
 
 ---
 
@@ -218,17 +218,27 @@ The policy lives in `SensorThresholdPolicy` instead of the controller so it can 
 
 ## 7. Current Persistence Decision
 
-The current implementation stores only the latest reading per device in memory.
+The current implementation supports two persistence modes:
 
-MongoDB is intentionally postponed because Phase 5 is about stabilizing:
+| Profile | Implementation | Notes |
+|---|---|---|
+| default | `InMemorySensorReadingStore` | No external database required |
+| `mongo` | `MongoSensorReadingRepository` | Uses Spring Data MongoDB |
 
-- API request and response shape
-- validation behavior
-- domain records
-- service and policy boundaries
-- repository abstraction for future persistence
+The MongoDB collection is:
 
-The code already has a `SensorReadingRepository` interface. The current implementation is `InMemorySensorReadingStore`; a later MongoDB implementation can replace it without changing the controller contract.
+```text
+sensor_readings
+```
+
+Connection values are provided through environment variables:
+
+```text
+MONGODB_URI=mongodb://localhost:27017/forest_iot_gateway
+SPRING_PROFILES_ACTIVE=mongo
+```
+
+Do not commit `.env` files or secrets. Local examples use only non-secret localhost defaults.
 
 ---
 
@@ -236,7 +246,7 @@ The code already has a `SensorReadingRepository` interface. The current implemen
 
 | Future Area | Direction |
 |---|---|
-| MongoDB | Persist readings and issue history |
+| MongoDB | Add richer query APIs for persisted readings and issue history |
 | DailySummary | Add daily aggregation per device |
 | DeviceStatus | Add `NORMAL`, `WARNING`, `NO_DATA` summary status |
 | Operations | Add Redis, Kafka, Docker, Kubernetes, CI, and k6 in later phases |

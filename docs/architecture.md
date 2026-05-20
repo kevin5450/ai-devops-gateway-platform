@@ -45,21 +45,33 @@ GET /api/devices/{deviceId}/issues/latest
 
 ## Persistence Boundary
 
-MongoDB is intentionally not connected yet. Phase 5 prepares for persistence by using a repository interface:
+The service keeps the repository boundary explicit:
 
 ```text
 SensorReadingRepository
-      ^
       |
-InMemorySensorReadingStore
+      +-- InMemorySensorReadingStore      default profile
+      |
+      +-- MongoSensorReadingRepository    mongo profile
 ```
 
-A future MongoDB repository can implement the same interface after the API contract and validation behavior are stable.
+The controller and service layers depend only on `SensorReadingRepository`. The active storage implementation is selected by Spring profile.
+
+MongoDB connection values are read from environment-backed Spring properties:
+
+```yaml
+spring:
+  data:
+    mongodb:
+      uri: ${MONGODB_URI:mongodb://localhost:27017/forest_iot_gateway}
+```
+
+No secrets are hardcoded in the application.
 
 ## Planned Expansion
 
 - React Web Client
-- MongoDB persistence for readings and issue history
+- Expanded MongoDB query APIs for readings and issue history
 - DailySummary API
 - DeviceStatus API
 - Redis rate limiting

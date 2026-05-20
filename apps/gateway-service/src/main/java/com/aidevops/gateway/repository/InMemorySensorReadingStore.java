@@ -5,9 +5,11 @@ import com.aidevops.gateway.domain.SensorReading;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 @Repository
+@Profile("!mongo")
 public class InMemorySensorReadingStore implements SensorReadingRepository {
 
     private final ConcurrentMap<String, SensorReading> latestReadings = new ConcurrentHashMap<>();

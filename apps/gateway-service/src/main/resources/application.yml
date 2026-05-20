@@ -1,6 +1,9 @@
 spring:
   application:
     name: gateway-service
+  data:
+    mongodb:
+      uri: ${MONGODB_URI:mongodb://localhost:27017/forest_iot_gateway}
 
 server:
   port: ${SERVER_PORT:8080}
